@@ -101,7 +101,7 @@ If you encounter any issues:
 
 ## Support
 
-For any questions or support, please contact support@vizbee.tv or visit our documentation at https://console.vizbee.tv/app/vzb2000001/develop/guides/smarttv-snippets
+For any questions or support, please contact support@vizbee.tv or visit our documentation at https://developer.vizbee.tv/continuity/smart-tv/integration-guide/setup
 
 ## Appendix
 
@@ -112,5 +112,5 @@ For any questions or support, please contact support@vizbee.tv or visit our docu
 5. Run/debug the sample app. If you debug, you will see Chrome developer tools launch. This will enable you to debug, monitor network requests, and execute commands through the javascript console.
 
 ### Documentation
-* [Vizbee Samsung Tizen TV Developer Guide](https://console.vizbee.tv/app/vzb2000001/develop/guides/smarttv-sdk)
-* [Code Snippets](https://console.vizbee.tv/app/vzb2000001/develop/guides/smarttv-snippets)
+- [Vizbee Smart TV Developer Guide](https://developer.vizbee.tv/continuity/smart-tv/integration-guide/setup)
+- [Vizbee Documentation](https://developer.vizbee.tv)

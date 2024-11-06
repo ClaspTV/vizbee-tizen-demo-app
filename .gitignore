@@ -2,3 +2,4 @@ node_modules
 build
 packages
 workload-install.sh
+.DS_Store
