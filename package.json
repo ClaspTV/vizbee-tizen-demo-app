@@ -1,0 +1,27 @@
+{
+  "name": "vizbee-demo-app",
+  "version": "1.0.0",
+  "description": "This repository contains a sample app that uses the Bitmovin HTML5 Player in a Tizen App. Project structure:",
+  "main": "main.js",
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.4",
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^9.2.1",
+    "babel-preset-env": "^1.7.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.2",
+    "html-webpack-plugin": "^5.6.0",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "scripts": {
+    "build": "webpack --mode production",
+    "package": "chmod +x generate-package.sh; ./generate-package.sh build packages",
+    "clean": "rm -rf build packages"
+  },
+  "author": "",
+  "license": "ISC",
+  "keywords": []
+}
