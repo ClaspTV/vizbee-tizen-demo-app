@@ -1,54 +1,79 @@
 /* Update grid-screen.css */
 
+#wrapper {
+    background: #121212;
+    position: relative;
+    isolation: isolate;
+    transform: translateZ(0);
+}
+
+#grid-screen {
+    position: relative;
+    transform: translateZ(0);
+    contain: layout style paint;
+}
+
 .content {
+    position: relative;
     width: 100vw;
     height: 100vh;
     margin: 0 auto;
     background: #121212;
-    display: flex;          /* Add flex to enable centering */
-    align-items: center;    /* Center vertically */
-    padding-top: 5vh;      /* Add some padding from the top to account for banner */
+    display: flex;
+    align-items: center;
+    padding-top: 5vh;
+    transform: translateZ(0);
+    contain: layout style paint;
 }
 
 .grid {
+    position: relative;
     margin-left: calc(70px + 15vw);
     width: calc(100vw - 70px - 30vw);
-    height: 60vh;          /* Adjust height for better proportions */
+    max-height: 70vh;
     display: grid;
+    align-items: center;
     grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: 1fr;
+    grid-auto-rows: minmax(0, 1fr);
     gap: 3%;
-    padding: 0 20px;       /* Add some horizontal padding */
+    padding: 0 20px;
+    contain: layout style paint;
+    transform: translateZ(0);
 }
 
 .card {
-    width: 100%;
-    height: 100%;
     position: relative;
+    width: 100%;
+    height: 80%;
     overflow: hidden;
-    border: clamp(1px, 0.2vw, 3px) solid transparent;  /* Scaled border */
-    transition: all 0.3s ease;
-    border-radius: clamp(4px, 0.4vw, 8px);  /* Scaled border radius */
+    border: clamp(1px, 0.2vw, 3px) solid transparent;
+    border-radius: clamp(4px, 0.4vw, 8px);
     background: #1a1a1a;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateZ(0);
+    will-change: transform, border-color;
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .card:focus {
     outline: none;
     border-color: #1eabe3;
-    transform: scale(1.02);
+    transform: scale(1.02) translateZ(0);
     box-shadow: 0 8px 12px rgba(30, 171, 227, 0.2);
 }
 
 .card img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+    object-fit: fill;
+    transform: translateZ(0);
+    will-change: transform;
+    transition: transform 0.2s ease;
+    backface-visibility: hidden;
 }
 
 .card:focus img {
-    transform: scale(1.05);
+    transform: scale(1.05) translateZ(0);
 }
 
 .card-title {
@@ -56,7 +81,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
     color: white;
     display: flex;
     justify-content: center;
@@ -64,37 +89,19 @@
     text-align: center;
     padding: 20px 10px;
     box-sizing: border-box;
+    transform: translateZ(0);
+    pointer-events: none;
 }
 
 .card-title span {
-    font-size: 1.5vw;
+    font-size: clamp(14px, 1.5vw, 24px);
     font-weight: 400;
 }
 
-/* Update banner styles to match dark theme */
-#banner {
-    background-color: #1a1a1a !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Update the main background */
-body {
-    background: #121212 !important;
-    background: linear-gradient(to right, #121212, #1a1a1a) !important;
-}
-
-/* Update text colors */
-h1.vizbee-headline, 
-h2.vizbee-headline, 
-h3.vizbee-headline, 
-p {
-    color: rgba(255, 255, 255, 0.9);
-}
-
 /* Wrapper background */
-#wrapper {
+/* #wrapper {
     background: #121212;
-}
+} */
 
 /* Custom scrollbar for the content */
 ::-webkit-scrollbar {
@@ -117,31 +124,22 @@ p {
 
 /* Media queries for border adjustments */
 @media screen and (max-width: 1280px) {
-    .card {
-        border-width: 1px;
-        border-radius: 4px;
-    }
-    .card:focus {
-        border-width: 3px;
+    .card-container {
+        padding: 10px;
+        margin: -10px;
     }
 }
 
 @media screen and (min-width: 1281px) and (max-width: 1920px) {
-    .card {
-        border-width: 2px;
-        border-radius: 6px;
-    }
-    .card:focus {
-        border-width: 6px;
+    .card-container {
+        padding: 12px;
+        margin: -12px;
     }
 }
 
 @media screen and (min-width: 1921px) {
-    .card {
-        border-width: 3px;
-        border-radius: 8px;
-    }
-    .card:focus {
-        border-width: 9px;
+    .card-container {
+        padding: 14px;
+        margin: -14px;
     }
 }

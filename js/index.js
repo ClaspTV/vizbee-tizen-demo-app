@@ -329,7 +329,7 @@ function listenAndIntiVizbee() {
         if (window.vizbee) {
             console.log(`listenAndIntiVizbee - initiating vizbee sdk now ...`);
             const vzbInstance = window.vizbee.continuity.ContinuityContext.getInstance();
-            vzbInstance.start('vzb9530844987');
+            vzbInstance.start('vzb1703223811');
             setDeeplinkHandler();
 
             // Load and initialize Vizbee Home SSO SDK

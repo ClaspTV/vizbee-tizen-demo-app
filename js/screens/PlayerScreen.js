@@ -49,13 +49,13 @@ export default class PlayerScreen {
 
         // Player configuration
         const conf = {
-            key: "<YOUR-BITMOVIN-PLAYER-KEY>",
+            key: "b55933e9-e033-4e73-bc59-a60e9133fb11",
             playback: {
                 autoplay: true,
             },
             tweaks: {
                 file_protocol: true,
-                app_id: "<YOUR-APP's-PACKAGE-NAME-CONFIGURED-WITH-BITMOVIN-PLAYER>",
+                app_id: "com.vizbeehomesso.demoapp",
                 BACKWARD_BUFFER_PURGE_INTERVAL: 10,
             },
             buffer: bufferConfig,
