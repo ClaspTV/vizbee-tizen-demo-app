@@ -1,52 +1,147 @@
+/* Update grid-screen.css */
+
 .content {
     width: 100vw;
-    height: 85vh;
-    padding-top: 10vh;
+    height: 100vh;
     margin: 0 auto;
+    background: #121212;
+    display: flex;          /* Add flex to enable centering */
+    align-items: center;    /* Center vertically */
+    padding-top: 5vh;      /* Add some padding from the top to account for banner */
 }
+
 .grid {
-    margin-top: 10vh;
-    margin-left: 15vw;
-    width: 70vw;
-    height: 50vh;
+    margin-left: calc(70px + 15vw);
+    width: calc(100vw - 70px - 30vw);
+    height: 60vh;          /* Adjust height for better proportions */
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: 1fr;
-    gap: 40px;
+    gap: 3%;
+    padding: 0 20px;       /* Add some horizontal padding */
 }
+
 .card {
     width: 100%;
     height: 100%;
     position: relative;
     overflow: hidden;
-    border: 5px solid transparent;
-    transition: border-color 0.3s ease;
+    border: clamp(1px, 0.2vw, 3px) solid transparent;  /* Scaled border */
+    transition: all 0.3s ease;
+    border-radius: clamp(4px, 0.4vw, 8px);  /* Scaled border radius */
+    background: #1a1a1a;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
 .card:focus {
     outline: none;
-    border-color: #00ff00;
+    border-color: #1eabe3;
+    transform: scale(1.02);
+    box-shadow: 0 8px 12px rgba(30, 171, 227, 0.2);
 }
+
 .card img {
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    object-fit: cover;
+    transition: transform 0.3s ease;
 }
+
+.card:focus img {
+    transform: scale(1.05);
+}
+
 .card-title {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 25%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0));
     color: white;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    padding: 10px;
+    padding: 20px 10px;
     box-sizing: border-box;
 }
+
 .card-title span {
     font-size: 1.5vw;
-    font-weight: 500;
+    font-weight: 400;
+}
+
+/* Update banner styles to match dark theme */
+#banner {
+    background-color: #1a1a1a !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Update the main background */
+body {
+    background: #121212 !important;
+    background: linear-gradient(to right, #121212, #1a1a1a) !important;
+}
+
+/* Update text colors */
+h1.vizbee-headline, 
+h2.vizbee-headline, 
+h3.vizbee-headline, 
+p {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Wrapper background */
+#wrapper {
+    background: #121212;
+}
+
+/* Custom scrollbar for the content */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+/* Media queries for border adjustments */
+@media screen and (max-width: 1280px) {
+    .card {
+        border-width: 1px;
+        border-radius: 4px;
+    }
+    .card:focus {
+        border-width: 3px;
+    }
+}
+
+@media screen and (min-width: 1281px) and (max-width: 1920px) {
+    .card {
+        border-width: 2px;
+        border-radius: 6px;
+    }
+    .card:focus {
+        border-width: 6px;
+    }
+}
+
+@media screen and (min-width: 1921px) {
+    .card {
+        border-width: 3px;
+        border-radius: 8px;
+    }
+    .card:focus {
+        border-width: 9px;
+    }
 }

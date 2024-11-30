@@ -1,5 +1,7 @@
 import PlayerScreen from './screens/PlayerScreen';
 import GridScreen from './screens/GridScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import SideNav from './SideNav.js';
 import MyVizbeeHandlers from './vizbee/MyVizbeeHandlers';
 
 /**
@@ -42,9 +44,12 @@ const mediaList = [
 ];
 
 // Global variables to manage application state
+let currentFocusedScreen = 'grid';
 let currentScreen = 'grid';
 let gridScreen = new GridScreen(mediaList);
 let playerScreen = new PlayerScreen(mediaList);
+let profileScreen = new ProfileScreen();
+let sideNav = new SideNav();
 
 /**
  * Initialize the application when the DOM is fully loaded.
@@ -52,9 +57,22 @@ let playerScreen = new PlayerScreen(mediaList);
 document.addEventListener('DOMContentLoaded', () => {
     gridScreen.init();
     playerScreen.init();
+    profileScreen.init();
+
+    // Initialize sidebar navigation
+    sideNav.init();
+
+    gridScreen.updateFocus();
 
     // Set up key event listeners
     document.addEventListener('keydown', registerForKeyListeners);
+
+    // Handle keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebarOverlay.classList.contains('active')) {
+            sidebarOverlay.classList.remove('active');
+        }
+    });
 
 	// [BEGIN] Vizbee Integration
 
@@ -85,15 +103,31 @@ function registerForKeyListeners(e) {
  */
 function registerForDesktopKeyboardEvents(e) {
     switch (e.key) {
+        case 'ArrowUp':
+        case 'u':
+        case 'U':
+            e.preventDefault();
+            if (currentFocusedScreen === 'sidebar') {
+                sideNav.handleUpArrow();
+            }
+            break;
+        case 'ArrowDown':
+        case 'd':
+        case 'D':
+            e.preventDefault();
+            if (currentFocusedScreen === 'sidebar') {
+                sideNav.handleDownArrow();
+            }
+            break;
         case 'ArrowLeft':
-        case 'p':
-        case 'P':
+        case 'l':
+        case 'L':
             e.preventDefault();
             handleLeftArrow();
             break;
         case 'ArrowRight':
-        case 'n':
-        case 'N':
+        case 'r':
+        case 'R':
             e.preventDefault();
             handleRightArrow();
             break;
@@ -114,6 +148,18 @@ function registerForDesktopKeyboardEvents(e) {
  */
 function registerForTizenRemoteKeyEvents(e) {
     switch (Number(e.keyCode)) {
+        case 38:
+            e.preventDefault();
+            if (currentFocusedScreen === 'sidebar') {
+                sideNav.handleUpArrow();
+            }
+            break;
+        case 40:
+            e.preventDefault();
+            if (currentFocusedScreen === 'sidebar') {
+                sideNav.handleDownArrow();
+            }
+            break;
         case window.tizen && tizen.tvinputdevice.getKey('MediaPlayPause').code:
         case 19:
         case 415:
@@ -124,6 +170,7 @@ function registerForTizenRemoteKeyEvents(e) {
             break;
         case 39: // RIGHT arrow
             handleRightArrow();
+            break;
             break;
         case 13: // OK button
             handleEnter();
@@ -147,21 +194,42 @@ function handlePlayPause() {
 /**
  * Handle left arrow button press.
  */
-function handleLeftArrow() {
-    if(currentScreen === 'grid') {
-        gridScreen.handleLeftArrow();
-    } else {
+function handleLeftArrow(e) {
+    if(currentFocusedScreen === 'grid') {
+        if(gridScreen.currentFocusedItemIndex === 0) {
+            currentScreen = 'grid';
+            currentFocusedScreen = 'sidebar';
+            sideNav.handleLeftArrow();
+        } else {
+            gridScreen.handleLeftArrow();
+        }
+    } else if(currentFocusedScreen === 'player') {
         playerScreen.handleLeftArrow();
+    } else if(currentFocusedScreen === 'profile') {
+        currentFocusedScreen = 'sidebar';
+        sideNav.toggleSidebar();
+        sideNav.updateFocus();
     }
 }
 
 /**
  * Handle right arrow button press.
  */
-function handleRightArrow() {
-    if(currentScreen === 'grid') {
+function handleRightArrow(e) {
+    if(currentFocusedScreen === 'sidebar') {
+        sideNav.handleRightArrow();
+        if(currentScreen === 'grid') {
+            currentFocusedScreen = 'grid';
+            gridScreen.updateFocus();
+            return;
+        }
+        if(currentScreen === 'profile') {
+            currentFocusedScreen = 'profile';
+            profileScreen.updateFocus();
+        }
+    } else if(currentFocusedScreen === 'grid') {
         gridScreen.handleRightArrow();
-    } else {
+    } else if(currentFocusedScreen === 'player') {
         playerScreen.handleRightArrow();
     }
 }
@@ -169,37 +237,77 @@ function handleRightArrow() {
 /**
  * Handle enter/OK button press.
  */
-function handleEnter() {
-    if(currentScreen === 'grid') {
-        toggleScreen();
+function handleEnter(e) {
+    if(currentFocusedScreen === 'grid') {
+        toggleScreen('player');
         const currentVideoIndex = gridScreen.getCurrentItemIndex();
         playerScreen.handleStartVideo(currentVideoIndex);
+        currentFocusedScreen = 'player';
         currentScreen = 'player';
-    } else {
+        return;
+    } 
+    if(currentFocusedScreen === 'player') {
         playerScreen.handleEnter();
+        return;
+    }
+    if(currentFocusedScreen === 'sidebar') {
+        sideNav.handleEnter();
+        if(sideNav.currentFocusedIndex === 0) {
+            currentScreen = 'grid';
+            currentFocusedScreen = 'grid';
+            sideNav.switchToGrid();
+            gridScreen.updateFocus();
+            return;
+        }
+        if(sideNav.currentFocusedIndex === 1) {
+            currentScreen = 'profile';
+            currentFocusedScreen = 'profile';
+            sideNav.switchToProfile();
+            profileScreen.updateFocus();
+            return;
+        }
+        return;
+    }
+    if(currentFocusedScreen === 'profile') {
+        profileScreen.handleEnter();
+        return;
     }
 }
 
 /**
  * Handle back button press.
  */
-function handleBack() {
-    if(currentScreen === 'grid') {
+function handleBack(e) {
+    if(currentFocusedScreen === 'grid') {
         gridScreen.handleBack();
-    } else {
+        return;
+    } 
+    if(currentFocusedScreen === 'player') {
         playerScreen.handleBack();
-        toggleScreen();
+        toggleScreen('grid');
         gridScreen.updateFocus();
+        currentFocusedScreen = 'grid';
         currentScreen = 'grid';
+        return;
     }
 }
 
 /**
  * Toggle between grid and player screens.
  */
-function toggleScreen() {
-    document.getElementById('grid-screen').classList.toggle('inactive');
-    document.getElementById('player-screen').classList.toggle('inactive');
+function toggleScreen(screen) {
+
+    document.getElementById('grid-screen').classList.add('inactive');
+    document.getElementById('player-screen').classList.add('inactive');
+    document.getElementById('profile-screen').classList.add('inactive');
+    document.getElementById(screen+'-screen').classList.remove('inactive');
+
+    const sidebar = document.getElementById('sidebar');
+    if(screen === 'player') {
+        sidebar.classList.add('inactive');
+    } else {
+        sidebar.classList.remove('inactive');
+    }
 }
 
 // [BEGIN] Vizbee Integration
@@ -210,7 +318,7 @@ function toggleScreen() {
  */
 function loadAndInitVizbee() {
     listenAndIntiVizbee();
-    return addScript("https://sdk.claspws.tv/v7/vizbee.js");
+    return addScript("https://vzb-origin.s3.us-east-1.amazonaws.com/sdk-legacy/js-homesso-dev/vizbee_sdk.js?seed="+Math.random());
 }
 
 /**
@@ -221,8 +329,38 @@ function listenAndIntiVizbee() {
         if (window.vizbee) {
             console.log(`listenAndIntiVizbee - initiating vizbee sdk now ...`);
             const vzbInstance = window.vizbee.continuity.ContinuityContext.getInstance();
-            vzbInstance.start('vzb2000001');
+            vzbInstance.start('vzb9530844987');
             setDeeplinkHandler();
+
+            // Load and initialize Vizbee Home SSO SDK
+            loadAndInitVizbeeHomeSSO();
+        }
+    });
+}
+
+function loadAndInitVizbeeHomeSSO() {
+    listenAndIntiVizbeeHomeSSO();
+    return addScript("https://vzb-origin.s3.us-east-1.amazonaws.com/sdk-legacy/js-homesso-dev/vizbee_homesso_sdk.js?seed="+Math.random());
+}
+
+function listenAndIntiVizbeeHomeSSO() {
+    window.addEventListener('vizbee-homesso-sdk-ready', () => {
+        if (window.vizbee1.homesso) {
+            console.log(`listenAndIntiVizbeeHomeSSO - initiating vizbee homesso sdk now ...`);
+            const vzbHomeSSOContext = vizbee1.homesso.HomeSSOContext.getInstance();
+            const vzbHomeSSOManager = vzbHomeSSOContext.getHomeSSOManager();
+            vzbHomeSSOManager.setSignInHandler((signInInfo, statusCallback) => {
+                console.log('CurrentScreen: ', currentScreen);
+                if(currentScreen != 'player') {
+                    // Handle sign in
+                    profileScreen.handleSignIn(signInInfo, statusCallback);
+                }
+            });
+
+            vzbHomeSSOManager.setSignInInfoGetter(() => {
+                // Get sign in info
+                return profileScreen.getSignInInfo();
+            });
         }
     });
 }
@@ -235,8 +373,8 @@ function setDeeplinkHandler() {
         const vizbeeHandlersInstance = MyVizbeeHandlers.getInstance(playerScreen);
         const vzbInstance = vizbee.continuity.ContinuityContext.getInstance();
         vzbInstance.getAppAdapter().setDeeplinkHandler((videoInfo) => {
-            toggleScreen();
-            currentScreen = "player";
+            toggleScreen('player');
+            currentFocusedScreen = "player";
             vizbeeHandlersInstance.deeplinkHandler(videoInfo);
         });
     }

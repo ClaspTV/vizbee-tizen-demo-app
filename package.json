@@ -1,5 +1,5 @@
 {
-  "name": "vizbee-demo-app",
+  "name": "vizbee-homesso-demo-app",
   "version": "1.0.0",
   "description": "This repository contains a sample app that uses the Bitmovin HTML5 Player in a Tizen App. Project structure:",
   "main": "main.js",

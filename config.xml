@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<widget xmlns:tizen="http://tizen.org/ns/widgets" xmlns="http://www.w3.org/ns/widgets" id="http://yourdomain/VizbeeDemoApp" version="1.0.0" viewmodes="maximized">
-	<access origin="*" subdomains="true"></access>
-    <tizen:application id="sMulUBHvPv.VizbeeDemoApp" package="sMulUBHvPv" required_version="2.3"/>
+<widget xmlns:tizen="http://tizen.org/ns/widgets" xmlns="http://www.w3.org/ns/widgets" id="http://yourdomain/VizbeeHomeSSODemoApp" version="1.0.0" viewmodes="maximized">
+    <access origin="*" subdomains="true"></access>
+    <tizen:application id="yIKEbxP8gf.VizbeeHomeSSODemoApp" package="yIKEbxP8gf" required_version="2.1"/>
     <content src="index.html"/>
     <feature name="http://tizen.org/feature/screen.size.normal.1080.1920"/>
     <icon src="images/vizbee-logo.png"/>
-    <name>VizbeeDemoApp</name>
+    <tizen:metadata key="http://tizen.org/metadata/app_ui_type/base_screen_resolution" value="extensive"/>
+    <name>VizbeeHomeSSODemoApp</name>
     <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
     <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
     <tizen:privilege name="http://tizen.org/privilege/network.get"/>

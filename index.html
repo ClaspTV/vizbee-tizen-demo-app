@@ -32,6 +32,8 @@
 
         <link rel="stylesheet" href="css/style.css">
         <link rel="stylesheet" href="css/grid-screen.css">
+        <link rel="stylesheet" href="css/profile-screen.css">
+        <link rel="stylesheet" href="css/side-nav.css">
 
         <script type="text/javascript" src="$WEBAPIS/webapis/webapis.js"></script>
     
@@ -40,12 +42,9 @@
     <body>
         <div id="wrapper">
 
+            <div id="sidebar" class="sidebar"></div>
+
             <div id="grid-screen" class="active">
-                <div id="banner">
-                    <div class="logo"><img src="images/vizbee-logo.png" style="width:6vh; height: auto;"></div>
-                    <div class="title"><h1 class="vizbee-headline">Vizbee Demo App</h1></div>
-                    <div class="clearfix"></div>
-                </div>
                 <div class="content">
                     <div class="grid" id="grid-container"></div>
                 </div>
@@ -54,6 +53,8 @@
             <div id="player-screen" class="inactive">
                 <div id="player"></div>
             </div>
+
+            <div id="profile-screen" class="inactive"></div>
 
         </div>
     </body>

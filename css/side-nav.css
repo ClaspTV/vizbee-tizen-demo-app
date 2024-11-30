@@ -1,0 +1,207 @@
+/* Base sidebar styles */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 6%;  /* Collapsed state width */
+  height: 100vh;
+  background-color: #1a1a1a;
+  transition: width 0.3s ease;
+  z-index: 1002;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+/* Expanded state */
+.sidebar.expanded {
+  width: 20vw;
+  background: rgba(26, 26, 26, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Content wrapper */
+.sidebar-content {
+  position: relative;
+  width: 20vw;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 0;
+  background-color: #1a1a1a;
+  z-index: 1;
+}
+
+/* Header section */
+.sidebar-header {
+  padding: 2vh 1.5vw;
+  display: flex;
+  align-items: center;
+  gap: 1vw;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Logo */
+.sidebar-logo {
+  width: 3vw;
+  height: 3vw;
+  flex-shrink: 0;
+}
+
+/* App name */
+.app-name {
+  color: white;
+  font-size: 1.5vw;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.sidebar.expanded .app-name {
+  opacity: 1;
+}
+
+/* Navigation section */
+.sidebar-nav {
+  flex: 1;
+  overflow: hidden;
+  padding: 2vh 0;
+}
+
+/* Navigation items */
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 1.5vh 1.5vw;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  gap: 1vw;
+  position: relative;
+  z-index: 1;
+  border: 0.2vw solid transparent;
+  border-radius: 0.5vw;
+  margin: 0.5vh 0.5vw;
+}
+
+/* Focus state */
+.nav-item:focus {
+  outline: none;
+  border-color: #1eabe3;
+  transform: scale(1.02);
+  color: white;
+  text-decoration: none;
+}
+
+/* Active focus state */
+.nav-item.active:focus {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Navigation icons */
+.nav-item svg {
+  width: 2.5vw;
+  height: 2.5vw;
+  flex-shrink: 0;
+  min-width: 20px; /* Minimum size to prevent too small icons */
+  min-height: 20px;
+}
+
+/* Navigation text */
+.nav-text {
+  font-size: 1.2vw;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.sidebar.expanded .nav-text {
+  opacity: 1;
+}
+
+/* Hover state */
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Active state */
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Background overlay */
+.sidebar::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 5vw;
+  width: 0;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.sidebar.expanded::after {
+  width: calc(100vw - 5vw);
+  opacity: 1;
+}
+
+/* Hide scrollbar */
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Media query for minimum sizes */
+@media screen and (max-width: 1024px) {
+  .sidebar {
+    width: 50px;
+  }
+  
+  .sidebar.expanded {
+    width: 250px;
+  }
+  
+  .sidebar-content {
+    width: 250px;
+  }
+  
+  .sidebar-logo {
+    min-width: 30px;
+    min-height: 30px;
+  }
+  
+  .nav-text {
+    font-size: 14px;
+  }
+}
+
+/* Media queries for better responsiveness */
+@media screen and (max-width: 1280px) {
+  .app-name {
+    font-size: 24px;
+  }
+  .nav-text {
+    font-size: 22px;
+  }
+}
+
+@media screen and (min-width: 1281px) and (max-width: 1920px) {
+  .app-name {
+    font-size: 36px;
+  }
+  .nav-text {
+    font-size: 32px;
+  }
+}
+
+@media screen and (min-width: 1921px) and (max-width: 3840px) {
+  .app-name {
+    font-size: 72px;
+  }
+  .nav-text {
+    font-size: 64px;
+  }
+}
