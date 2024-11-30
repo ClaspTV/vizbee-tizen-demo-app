@@ -1,12 +1,12 @@
 #!/bin/bash
-# WebOS Build Package Generator
+# Tizen Build Package Generator
 # This script generates an Samsung Tizen build package (.wgt file) from a given directory
 
 # Function to display usage information
 usage() {
     echo "Usage: $0 <source_directory> [output_directory]"
-    echo "  <source_directory>: The directory containing your WebOS app source code"
-    echo "  [output_directory]: Optional. The directory where the .ipk file will be saved. Defaults to current directory."
+    echo "  <source_directory>: The directory containing your Tizen app source code"
+    echo "  [output_directory]: Optional. The directory where the .ipk file will be saved. Defaults to the current directory."
     exit 1
 }
 
