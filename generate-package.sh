@@ -28,6 +28,25 @@ fi
 # Navigate to the source directory
 cd "$SOURCE_DIR" || exit 1
 
+# Check if package.json exists and read version
+if [ ! -f "../package.json" ]; then
+    echo "Error: package.json not found in the specified folder."
+    exit 1
+fi
+
+# Read version from package.json
+# Try using jq if available, otherwise fall back to grep/sed
+if command -v jq >/dev/null 2>&1; then
+    VERSION=$(jq -r .version ../package.json)
+else
+    VERSION=$(grep -o '"version": "[^"]*"' ../package.json | cut -d'"' -f4)
+fi
+
+if [ -z "$VERSION" ]; then
+    echo "Error: Could not read version from package.json"
+    exit 1
+fi
+
 # Check if output directory exists, create if it doesn't
 if [ ! -d "$OUTPUT_DIR" ]; then
     echo "Error: Destination directory does not exist."
@@ -59,10 +78,14 @@ tizen security-profiles add --name MyProfile --author MyTizenCert --password MyP
 # Package the widget
 tizen package -t wgt -s MyProfile -- "$TEMP_DIR"
 
-# Move the .wgt file to the current directory
-mv "$TEMP_DIR"/*.wgt "$OUTPUT_DIR/"
+# Move the .wgt file to the output directory with version
+for file in "$TEMP_DIR"/*.wgt; do
+    filename=$(basename "$file")
+    new_filename="${filename%.*}_${VERSION}.wgt"
+    mv "$file" "$OUTPUT_DIR/$new_filename"
+done
 
 # Clean up
 rm -rf "$TEMP_DIR"
 
-echo "Widget file (.wgt) has been generated successfully."
+echo "Widget file (.wgt) has been generated successfully with version ${VERSION}."
