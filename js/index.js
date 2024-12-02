@@ -43,6 +43,17 @@ const mediaList = [
     }
 ];
 
+function loadWebapis() {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '$WEBAPIS/webapis/webapis.js';
+        script.async = false;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
 // Global variables to manage application state
 let currentFocusedScreen = 'grid';
 let currentScreen = 'grid';
@@ -54,7 +65,15 @@ let sideNav = new SideNav();
 /**
  * Initialize the application when the DOM is fully loaded.
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+
+
+    try {
+        await loadWebapis();
+    } catch (error) {
+        console.error('Failed to load webapis:', error);
+    }
+
     gridScreen.init();
     playerScreen.init();
     profileScreen.init();

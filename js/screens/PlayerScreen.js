@@ -38,7 +38,6 @@ export default class PlayerScreen {
         bitmovin.player.core.Player.addModule(window.bitmovin.player.hls.default);
         bitmovin.player.core.Player.addModule(window.bitmovin.player.crypto.default);
         bitmovin.player.core.Player.addModule(window.bitmovin.player.style.default);
-        bitmovin.player.core.Player.addModule(window.bitmovin.player.tizen.default);
 
         const bufferConfig = {};
         const bufferLevels = {};

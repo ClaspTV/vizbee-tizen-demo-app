@@ -20,7 +20,6 @@ export default class ProfileScreen {
 
         this.isVideoPlayerActive = false;
 
-        this.deviceId = webapis && webapis.productinfo && webapis.productinfo.getDuid();
         this.deviceInfo = null;
 
         this.api = new HttpClient('https://homesso.vizbee.tv');
@@ -33,6 +32,11 @@ export default class ProfileScreen {
      * Initialize the profile screen by checking authentication state and setting up the UI.
      */
     init() {
+        try {
+            this.deviceId = webapis && webapis.productinfo && webapis.productinfo.getDuid();
+        } catch (error) {
+            console.error('Failed to load webapis:', error);
+        }
         this.checkAuthState();
         this.setupOrUpdateUI();
     }
