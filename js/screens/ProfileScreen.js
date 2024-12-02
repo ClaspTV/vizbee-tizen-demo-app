@@ -10,6 +10,7 @@ export default class ProfileScreen {
     constructor() {
         this.isSignedIn = false;
         this.userEmail = null;
+
         this.container = null;
         this.currentFocusedElement = null;
         this.focusableElements = [];
@@ -19,8 +20,7 @@ export default class ProfileScreen {
 
         this.isVideoPlayerActive = false;
 
-        // TODO: Replace with actual device ID
-        this.deviceId = "test-device-id";
+        this.deviceId = webapis && webapis.productinfo && webapis.productinfo.getDuid();
         this.deviceInfo = null;
 
         this.api = new HttpClient('https://homesso.vizbee.tv');
@@ -33,49 +33,25 @@ export default class ProfileScreen {
      * Initialize the profile screen by checking authentication state and setting up the UI.
      */
     init() {
-        this.listenForDeviceId();
         this.checkAuthState();
         this.setupOrUpdateUI();
-    }
-
-    listenForDeviceId() {
-        try {
-            if (window.webOS) {
-
-                // Get system ID information
-                webOS.service.request("luna://com.webos.service.sm", {
-                    method: "deviceid/getIDs",
-                    parameters: { 
-                        "idType": ["LGUDID"]        
-                    },
-                    onSuccess: (inResponse) => {
-                        if(inResponse && inResponse.idList && inResponse.idList[0]) {
-                            this.deviceId = inResponse.idList[0].idValue;
-                        }
-                    },
-                    onFailure: (inError) => { 
-                        console.warn("LGWebOSNativeDeviceInfo::constructor - failed to fetch deviceId");
-                    }
-                });
-
-                webOS.deviceInfo((deviceRes) => {
-                    if(deviceRes) {
-                        this.deviceInfo = deviceRes;
-                    }
-                });
-            }
-        } catch (error) {
-            console.warn("LGWebOSNativeDeviceInfo::constructor - failed to fetch deviceId and modelName");
-        }
     }
 
     /**
      * Check the current authentication state.
      */
     checkAuthState() {
+        // if user NOT signed in, 
+        //      set isSignedIn to false
+        //      set userEmail to null
+        // if user signed in
+        //      set isSignedIn to true
+        //      set userEmail from localStorage
         if (localStorage.getItem('userEmail')) {
             this.isSignedIn = true;
             this.userEmail = localStorage.getItem('userEmail');
+        } else {
+            this.clearUserInfo();
         }
     }
 
@@ -220,15 +196,10 @@ export default class ProfileScreen {
                     retries: 2
                 }
             );
-            if ((signoutResponse && signoutResponse.data && !signoutResponse.data.error) || 
-                (signoutResponse && !signoutResponse.error)) {
-                this.isSignedIn = false;
-                this.userEmail = null;
-                localStorage.removeItem('userEmail');
-                this.userAuthToken = null;
-            }
+            this.clearUserInfo();
         } catch (error) {
             console.error('Failed to sign out user:', error);
+            this.clearUserInfo();
         }
         
         // Update UI
@@ -326,11 +297,6 @@ export default class ProfileScreen {
      * @returns {Promise<void>}
      */
     async pollSignInStatus(regCode, statusCallback) {
-        if(this.isSignedIn) {
-            console.log('User is already signed in');
-            return true;
-        }
-
         try {
             const pollingResponse = await this.api.post('/v1/accountregcode/poll', 
                 { 
@@ -408,5 +374,12 @@ export default class ProfileScreen {
                 statusCallback(errorSignInStatus);
             }
         }, 1000); // Poll every 1 second
+    }
+
+    clearUserInfo() {
+        localStorage.removeItem('userEmail');
+        this.isSignedIn = false;
+        this.userEmail = null;
+        this.userAuthToken = null;
     }
 }
