@@ -297,6 +297,12 @@ function handleEnter(e) {
  * Handle back button press.
  */
 function handleBack(e) {
+
+    if(currentFocusedScreen === 'sidebar') {
+        sideNav.handleBack();
+        return;
+    }
+
     if (profileScreen && profileScreen.isSignInInProgress) {
         profileScreen.cancelSignIn();
         return;

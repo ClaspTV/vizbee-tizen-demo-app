@@ -126,7 +126,13 @@ export default class SideNav {
         this.toggleSidebar();
     }
 
-
+    handleBack() {
+        if (window.tizen) {
+            tizen.application.getCurrentApplication().exit();
+            window.close();
+        }
+    }
+    
     expandSidebar() {
         this.isExpanded = true;
         this.sidebar.classList.add('expanded');
