@@ -242,6 +242,8 @@ export default class ProfileScreen {
     async handleSignIn(signInInfo, statusCallback) {
         console.log('Handling sign in:', signInInfo);
 
+        this.statusCallback = statusCallback;
+
         if(this.isSignedIn) {
             console.log('User is already signed in');
             return;
@@ -287,6 +289,8 @@ export default class ProfileScreen {
 
             const errorSignInStatus = new vizbee1.homesso.messages.FailureStatus(this.signInInfo.stype, 'Failed to get registration code', false, error);
             statusCallback(errorSignInStatus);
+            console.error('Calling servePendingDeeplink');
+            window.servePendingDeeplink();
         }
     }
 
@@ -309,8 +313,10 @@ export default class ProfileScreen {
                 }
             );
 
+            console.log('PollSignInStatus: Polling response:', pollingResponse);
             if (pollingResponse.data && pollingResponse.data.status === "done") {
 
+                console.log('Sign in successful:', pollingResponse.data);
                 this.userAuthToken = pollingResponse.data.authToken;
 
                 // Clear the polling interval
@@ -332,9 +338,10 @@ export default class ProfileScreen {
                 this.regCode = null;
                 return true;
             }
+            console.log('PollSignInStatus: Sign in not done yet:', pollingResponse.data);
             return false;
         } catch (error) {
-            console.error('Polling failed:', error);
+            console.error('PollSignInStatus: Polling failed:', error);
             this.isSignInInProgress = false;
             this.regCode = null;
             return false;
@@ -366,14 +373,28 @@ export default class ProfileScreen {
                 this.pollingInterval = null;
                 this.setupOrUpdateUI();
                 this.updateFocus();
+                console.log('Sign in successful, calling servePendingDeeplink');
+                window.servePendingDeeplink();
             } else if (attempts >= maxAttempts) {
                 clearInterval(this.pollingInterval);
                 this.pollingInterval = null;
 
                 const errorSignInStatus = new vizbee1.homesso.messages.FailureStatus(this.signInInfo.stype, 'Sign in timeout', false);
                 statusCallback(errorSignInStatus);
+                console.error('Sign in timeout, calling servePendingDeeplink');
+                window.servePendingDeeplink();
             }
         }, 1000); // Poll every 1 second
+    }
+
+    cancelSignIn() {
+        this.isSignInInProgress = false;
+        this.regCode = null;
+        this.setupOrUpdateUI();
+
+        const errorSignInStatus = new vizbee1.homesso.messages.FailureStatus(this.signInInfo.stype, 'User cancelled the signin', true);
+        this.statusCallback(errorSignInStatus);
+        window.servePendingDeeplink();
     }
 
     clearUserInfo() {

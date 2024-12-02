@@ -36,6 +36,49 @@
         <link rel="stylesheet" href="css/side-nav.css">
 
         <script type="text/javascript" src="$WEBAPIS/webapis/webapis.js"></script>
+
+        <script type="text/javascript">
+            // don't change the function to ES6 arrow function, since arrow functions doesn't have correct arguments binding
+            window.console.log = window.console.info = window.console.error = window.console.warn = window.console.debug = function() {
+                let xmlHttp = new XMLHttpRequest();
+                try {
+
+                    let messages = Array.prototype.slice.call(arguments);
+                    messages = convertObjectsToString(messages);
+
+                    // adding prefixes to log
+                    let prefixData = ["VizbeeHomeSSO"];
+                    Array.prototype.push.apply(prefixData, messages);
+                    let encodedData = encodeURIComponent(JSON.stringify({data: prefixData.join(" ")}));
+                    xmlHttp.open("GET", "https://ps.pndsn.com/publish/pub-c-1e4f216f-168e-4fdc-8a2b-a29ffe05cb5b/sub-c-6da25f1b-58d7-4f17-bd10-21a30198a794/0/vzblogchannel/0/" + encodedData, true); //async
+                    xmlHttp.send(null);
+                } catch(e) {}
+            };
+
+            function convertObjectsToString(messages) {
+
+                if (!messages) {
+                    return messages;
+                }
+
+                if (!Array.isArray(messages)) {
+                    return messages;
+                }
+
+                for (let index = 0; index < messages.length; index++) {
+
+                    let value = messages[index];
+                    try {
+                        if (typeof value == "object") {
+                            value = JSON.stringify(value);
+                        }
+                    } catch (error) {}
+                    messages[index] = value;
+                }
+
+                return messages;
+            }
+        </script>
     
         <script type="text/javascript" src="bundle.js"></script>
     </head>

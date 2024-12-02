@@ -278,6 +278,10 @@ function handleEnter(e) {
  * Handle back button press.
  */
 function handleBack(e) {
+    if (profileScreen && profileScreen.isSignInInProgress) {
+        profileScreen.cancelSignIn();
+        return;
+    }
     if(currentFocusedScreen === 'grid') {
         gridScreen.handleBack();
         return;
@@ -350,6 +354,7 @@ function listenAndIntiVizbeeHomeSSO() {
             const vzbHomeSSOContext = vizbee1.homesso.HomeSSOContext.getInstance();
             const vzbHomeSSOManager = vzbHomeSSOContext.getHomeSSOManager();
             vzbHomeSSOManager.setSignInHandler((signInInfo, statusCallback) => {
+                console.log('Index::setSignInHandler received');
                 console.log('CurrentScreen: ', currentScreen);
                 if(currentScreen != 'player') {
                     // Handle sign in
@@ -373,10 +378,27 @@ function setDeeplinkHandler() {
         const vizbeeHandlersInstance = MyVizbeeHandlers.getInstance(playerScreen);
         const vzbInstance = vizbee.continuity.ContinuityContext.getInstance();
         vzbInstance.getAppAdapter().setDeeplinkHandler((videoInfo) => {
+            console.log('Index::setDeeplinkHandler received');
+            if (profileScreen && profileScreen.isSignInInProgress) {
+                profileScreen.pendingDeeplink = videoInfo;
+                return;
+            }
             toggleScreen('player');
             currentFocusedScreen = "player";
             vizbeeHandlersInstance.deeplinkHandler(videoInfo);
         });
+    }
+}
+
+function servePendingDeeplink() {
+    console.log('Index::servePendingDeeplink');
+    if (profileScreen && profileScreen.pendingDeeplink) {
+        console.log('Index::servePendingDeeplink - pendingDeeplink found');
+        toggleScreen('player');
+        currentFocusedScreen = "player";
+        const vizbeeHandlersInstance = MyVizbeeHandlers.getInstance(playerScreen);
+        vizbeeHandlersInstance.deeplinkHandler(profileScreen.pendingDeeplink);
+        profileScreen.pendingDeeplink = null;
     }
 }
 
@@ -409,3 +431,5 @@ function addScript(src, integrity = null, crossorigin = null) {
 }
 
 // [END] Vizbee Integration
+
+window.servePendingDeeplink = servePendingDeeplink;
