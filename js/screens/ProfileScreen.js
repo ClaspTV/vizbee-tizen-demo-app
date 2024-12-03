@@ -1,4 +1,4 @@
-import { HttpClient } from './../utils/http-client';
+import { HttpClient } from '../utils/http-client';
 
 /**
  * ProfileScreen class manages the profile view and handles user authentication state.
@@ -102,7 +102,7 @@ export default class ProfileScreen {
      * @returns {string} HTML content for the profile view
      */
     getProfileContent() {
-        if (this.isSignInInProgress) {
+        if (this.isSignInInProgress && !this.isMobileUserSignedIn) {
             if(!this.regCode) {
                 return `
                     <div class="profile-card">
@@ -259,9 +259,9 @@ export default class ProfileScreen {
             return;
         }
 
-        // this.isMobileUserSignedIn = this.signInInfo.is_signed_in;
-        if(!this.signInInfo.is_signed_in) {
-            this.isSignInInProgress = true;
+        this.isSignInInProgress = true;
+        this.isMobileUserSignedIn = this.signInInfo.is_signed_in;
+        if(!this.isMobileUserSignedIn) {
             this.setupOrUpdateUI();
         }
 

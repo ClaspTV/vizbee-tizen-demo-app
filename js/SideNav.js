@@ -115,6 +115,11 @@ export default class SideNav {
     }
 
     handleEnter() {
+        this.setActiveNavItem();
+        this.toggleSidebar();
+    }
+
+    setActiveNavItem() {
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach((nav, index) => {
             nav.classList.remove('active');
@@ -122,8 +127,6 @@ export default class SideNav {
                 nav.classList.add('active');
             }
         });
-        
-        this.toggleSidebar();
     }
 
     handleBack() {

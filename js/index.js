@@ -383,6 +383,16 @@ function listenAndIntiVizbeeHomeSSO() {
                 console.log('CurrentScreen: ', currentScreen);
                 if(currentScreen != 'player') {
                     // Handle sign in
+
+                    const isUserSignedInMobile = signInInfo && signInInfo.sinfo && signInInfo.sinfo.is_signed_in;
+                    // Switch to profile screen first only if user is not signed in on mobile
+                    if(!isUserSignedInMobile) {
+
+                        handleScreenSwitch();
+                        profileScreen.updateFocus();
+                    }
+
+                    // Then handle sign in
                     profileScreen.handleSignIn(signInInfo, statusCallback);
                 }
             });
@@ -393,6 +403,15 @@ function listenAndIntiVizbeeHomeSSO() {
             });
         }
     });
+}
+
+function handleScreenSwitch() {
+    currentScreen = 'profile';
+    sideNav.switchToProfile();
+    sideNav.currentFocusedIndex = 1;
+    sideNav.setActiveNavItem();
+    sideNav.compressSidebar();
+    currentFocusedScreen = 'profile';
 }
 
 /**
@@ -409,6 +428,7 @@ function setDeeplinkHandler() {
                 return;
             }
             toggleScreen('player');
+            currentScreen = "player";
             currentFocusedScreen = "player";
             vizbeeHandlersInstance.deeplinkHandler(videoInfo);
         });
