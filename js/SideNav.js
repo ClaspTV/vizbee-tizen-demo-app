@@ -62,20 +62,6 @@ export default class SideNav {
         });
     }
 
-    // setupEventListeners() {
-    //     const navItems = document.querySelectorAll('.nav-item');
-    //     navItems.forEach(item => {
-    //         item.addEventListener('click', (e) => this.handleNavigation(e, item, navItems));
-    //     });
-
-    //     // Close sidebar when clicking the overlay
-    //     this.sidebar.addEventListener('click', (e) => {
-    //         if (this.isExpanded && e.target === this.sidebar) {
-    //             this.compressSidebar();
-    //         }
-    //     });
-    // }
-
     /**
      * Handle up arrow key press.
      */

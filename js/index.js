@@ -67,7 +67,6 @@ let sideNav = new SideNav();
  */
 document.addEventListener('DOMContentLoaded', async () => {
 
-
     try {
         await loadWebapis();
     } catch (error) {
@@ -185,18 +184,18 @@ function registerForTizenRemoteKeyEvents(e) {
             handlePlayPause();
             break;
         case 37: // LEFT arrow
-            handleLeftArrow();
+            handleLeftArrow(e);
             break;
         case 39: // RIGHT arrow
-            handleRightArrow();
+            handleRightArrow(e);
             break;
             break;
         case 13: // OK button
-            handleEnter();
+            handleEnter(e);
             break;
         case 413: // STOP button
         case 10009: // RETURN button
-            handleBack();
+            handleBack(e);
             break;
     }
 }
@@ -205,7 +204,7 @@ function registerForTizenRemoteKeyEvents(e) {
  * Handle play/pause button press.
  */
 function handlePlayPause() {
-    if(currentScreen === 'player') {
+    if(currentFocusedScreen === 'player') {
         playerScreen.handlePlayPause();
     }
 }
@@ -297,18 +296,25 @@ function handleEnter(e) {
  * Handle back button press.
  */
 function handleBack(e) {
-
+    
     if(currentFocusedScreen === 'sidebar') {
         sideNav.handleBack();
         return;
     }
 
-    if (profileScreen && profileScreen.isSignInInProgress) {
-        profileScreen.cancelSignIn();
-        return;
+    if (currentFocusedScreen === 'profile') {
+        if (profileScreen) {
+            if(profileScreen.isSignInInProgress) {
+                profileScreen.cancelSignIn();
+                return;
+            } else {
+                handleLeftArrow();
+            }
+        } 
     }
+
     if(currentFocusedScreen === 'grid') {
-        gridScreen.handleBack();
+        handleLeftArrow();
         return;
     } 
     if(currentFocusedScreen === 'player') {
@@ -346,17 +352,18 @@ function toggleScreen(screen) {
  * @returns {Promise} A promise that resolves when the Vizbee script is loaded.
  */
 function loadAndInitVizbee() {
-    listenAndIntiVizbee();
+    listenAndInitVizbeeContinuity();
     return addScript("https://vzb-origin.s3.us-east-1.amazonaws.com/sdk-legacy/js-homesso-dev/vizbee_sdk.js?seed="+Math.random());
+    // return addScript("http://10.0.0.14:8080/vizbee_vtv_sdk_v2.js?seed="+Math.random());
 }
 
 /**
  * Set up listener for Vizbee SDK initialization and initialize the SDK.
  */
-function listenAndIntiVizbee() {
+function listenAndInitVizbeeContinuity() {
     window.addEventListener('VIZBEE_SDK_READY', () => {
         if (window.vizbee) {
-            console.log(`listenAndIntiVizbee - initiating vizbee sdk now ...`);
+            console.log(`listenAndInitVizbeeContinuity - initiating vizbee sdk now ...`);
             const vzbInstance = window.vizbee.continuity.ContinuityContext.getInstance();
             vzbInstance.start('vzb1703223811');
             setDeeplinkHandler();
@@ -368,41 +375,86 @@ function listenAndIntiVizbee() {
 }
 
 function loadAndInitVizbeeHomeSSO() {
-    listenAndIntiVizbeeHomeSSO();
+    listenAndInitVizbeeHomeSSO();
     return addScript("https://vzb-origin.s3.us-east-1.amazonaws.com/sdk-legacy/js-homesso-dev/vizbee_homesso_sdk.js?seed="+Math.random());
+    // return addScript("http://10.0.0.14:8081/bundle.js?seed="+Math.random());
+    
 }
 
-function listenAndIntiVizbeeHomeSSO() {
-    window.addEventListener('vizbee-homesso-sdk-ready', () => {
-        if (window.vizbee1.homesso) {
-            console.log(`listenAndIntiVizbeeHomeSSO - initiating vizbee homesso sdk now ...`);
-            const vzbHomeSSOContext = vizbee1.homesso.HomeSSOContext.getInstance();
-            const vzbHomeSSOManager = vzbHomeSSOContext.getHomeSSOManager();
-            vzbHomeSSOManager.setSignInHandler((signInInfo, statusCallback) => {
-                console.log('Index::setSignInHandler received');
-                console.log('CurrentScreen: ', currentScreen);
-                if(currentScreen != 'player') {
-                    // Handle sign in
-
-                    const isUserSignedInMobile = signInInfo && signInInfo.sinfo && signInInfo.sinfo.is_signed_in;
-                    // Switch to profile screen first only if user is not signed in on mobile
-                    if(!isUserSignedInMobile) {
-
-                        handleScreenSwitch();
-                        profileScreen.updateFocus();
-                    }
-
-                    // Then handle sign in
-                    profileScreen.handleSignIn(signInInfo, statusCallback);
-                }
-            });
-
-            vzbHomeSSOManager.setSignInInfoGetter(() => {
-                // Get sign in info
-                return profileScreen.getSignInInfo();
-            });
+function listenAndInitVizbeeHomeSSO() {
+  if (window.vizbeehomesso) {
+    initVizbeeHomeSSO();
+  } else {
+    window.addEventListener('VIZBEE_HOMESSO_READY', () => {
+        if (window.vizbeehomesso) {
+          initVizbeeHomeSSO();
         }
     });
+  }
+}
+
+function initVizbeeHomeSSO() {
+    console.log(`listenAndInitVizbeeHomeSSO - initiating vizbee homesso sdk now ...`);
+    const vzbHomeSSOContext = vizbeehomesso.HomeSSOContext.getInstance();
+    const vzbHomeSSOManager = vzbHomeSSOContext.getHomeSSOManager();
+    vzbHomeSSOManager.init();
+    vzbHomeSSOManager.setSignInHandler((signInInfo, statusCallback) => {
+        console.log('Index::setSignInHandler received');
+        console.log('CurrentScreen: ', currentScreen);
+        if(currentScreen != 'player') {
+            // Handle sign in
+
+            const isUserSignedInMobile = signInInfo && signInInfo.sinfo && signInInfo.sinfo.is_signed_in;
+            // Switch to profile screen first only if user is not signed in on mobile
+            if(!isUserSignedInMobile) {
+
+                handleScreenSwitch();
+                profileScreen.updateFocus();
+            }
+
+            // Then handle sign in
+            profileScreen.handleSignIn(signInInfo, statusCallback);
+        }
+    });
+
+    vzbHomeSSOManager.setSignInInfoGetter(() => {
+        // Get sign in info
+        return profileScreen.getSignInInfo();
+    });
+
+    const homeSSOUIManager = vzbHomeSSOContext.getHomeSSOUIManager();
+    homeSSOUIManager.setTheme({
+        primaryColor: "#1eabe3;",
+    });
+
+    // homeSSOUIManager.setSuccessSignInModalConfig({
+    //     descriptionTextFontColor: "green"
+    // });
+
+    // homeSSOUIManager.setSignInModalConfig({
+    //     successPreference: {
+    //         options: {
+    //             titleText: "Please wait, signing in ...",
+    //             titleTextFontFamily: "Arial",
+    //             titleTextFontColor: "red",
+    //             titleTextFontSize: "50px",
+    //         }
+    //     }
+    // });
+
+    // homeSSOUIManager.setTheme({
+    //     theme: {
+    //         primaryColor: "#FF0000",
+    //     }
+    // });
+
+    // homeSSOUIManager.setSignInModalConfig({
+    //     modalConfig: {
+    //         successPreference: {
+    //             titleText: "Please wait, signing in ...",
+    //         }
+    //     }
+    // });
 }
 
 function handleScreenSwitch() {

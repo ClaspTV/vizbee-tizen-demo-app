@@ -19,7 +19,8 @@
   "scripts": {
     "build": "webpack --mode production",
     "package": "chmod +x generate-package.sh; ./generate-package.sh build packages",
-    "clean": "rm -rf build packages"
+    "clean": "rm -rf build packages",
+    "dev": "npm run clean; npm run build"
   },
   "author": "",
   "license": "ISC",

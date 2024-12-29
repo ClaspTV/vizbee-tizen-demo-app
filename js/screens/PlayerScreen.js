@@ -28,6 +28,7 @@ export default class PlayerScreen {
         // Add all necessary (and loaded) modules to the player core
         bitmovin.player.core.Player.addModule(window.bitmovin.player.polyfill.default);
         bitmovin.player.core.Player.addModule(window.bitmovin.player['engine-bitmovin'].default);
+        bitmovin.player.core.Player.addModule(window.bitmovin.player['engine-native'].default);
         bitmovin.player.core.Player.addModule(window.bitmovin.player['container-mp4'].default);
         bitmovin.player.core.Player.addModule(window.bitmovin.player['container-ts'].default);
         bitmovin.player.core.Player.addModule(window.bitmovin.player.mserenderer.default);
@@ -239,8 +240,17 @@ export default class PlayerScreen {
         this.currentPlayingVideoInfo = deeplinkVideoInfo;
         let source = {
             title: this.currentPlayingVideoInfo.title,
-            hls: this.currentPlayingVideoInfo.streamUrl,
         };
+        if(this.currentPlayingVideoInfo.streamUrl.indexOf('.mpd') > -1) {
+            source.dash = this.currentPlayingVideoInfo.streamUrl;
+        } else if (this.currentPlayingVideoInfo.streamUrl.indexOf('.m3u8') > -1) {
+            source.hls = this.currentPlayingVideoInfo.streamUrl;
+        } else if (this.currentPlayingVideoInfo.streamUrl.indexOf('.mp4') > -1) {
+            source.progressive = [{
+                url: this.currentPlayingVideoInfo.streamUrl,
+                type: 'video/mp4'
+            }];
+        }
         if(!this.currentPlayingVideoInfo.isLive 
             && !isNaN(this.currentPlayingVideoInfo.startPosition)
             && this.currentPlayingVideoInfo.startPosition > 0) {

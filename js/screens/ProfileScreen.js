@@ -10,6 +10,7 @@ export default class ProfileScreen {
     constructor() {
         this.isSignedIn = false;
         this.userEmail = null;
+        this.userAuthToken = null;
 
         this.container = null;
         this.currentFocusedElement = null;
@@ -26,6 +27,10 @@ export default class ProfileScreen {
 
         this.isSignInInProgress = false;
         this.regCode = null;
+
+        this.isPolling = false;
+        this.shouldContinue = true;
+        this.pollingInterval = null;
     }
 
     /**
@@ -51,9 +56,10 @@ export default class ProfileScreen {
         // if user signed in
         //      set isSignedIn to true
         //      set userEmail from localStorage
-        if (localStorage.getItem('userEmail')) {
+        if (localStorage.getItem('userEmail') && localStorage.getItem('userAuthToken')) {
             this.isSignedIn = true;
             this.userEmail = localStorage.getItem('userEmail');
+            this.userAuthToken = localStorage.getItem('userAuthToken');
         } else {
             this.clearUserInfo();
         }
@@ -197,13 +203,12 @@ export default class ProfileScreen {
                         'Authorization': this.userAuthToken
                     },
                     timeout: 5000,
-                    retries: 2
+                    retries: 5
                 }
             );
             this.clearUserInfo();
         } catch (error) {
             console.error('Failed to sign out user:', error);
-            this.clearUserInfo();
         }
         
         // Update UI
@@ -231,10 +236,26 @@ export default class ProfileScreen {
     // SignIn handling methods
 
     getSignInInfo() {
+        const UNKNOWN = 'unknown';
+        if(!this.isSignedIn) {
+            return Promise.resolve([{
+                userLoginType: "MVPD",
+                isSignedIn: false
+            }]);
+        }
+
         return Promise.resolve([{
-            signInType: "d2c",
-            isSignedIn: this.isSignedIn,
-            userLogin: this.userEmail
+            userLoginType: "MVPD",
+            isSignedIn: true,
+            userLogin: this.userEmail,
+            userName: "Sarvesh",
+            userSubscriptionRenewalType: "monthly",
+            userSubscriptionType: "subscriptionType-1",
+            userSubscriptionValue: "subscriptionValue-1",
+            userAdditionalInfo: {
+                customKey1: "customValue1",
+                customKey2: "customValue2"
+            },
         }]);
     }
 
@@ -282,7 +303,7 @@ export default class ProfileScreen {
                 this.setupOrUpdateUI();
                 
                 // Notify progress with registration code
-                const progressSignInStatus = new vizbee1.homesso.messages.ProgressStatus(this.signInInfo.stype, { regcode: regCode });
+                const progressSignInStatus = new vizbeehomesso.messages.ProgressStatus(this.signInInfo.stype, { regcode: regCode });
                 statusCallback(progressSignInStatus);
 
                 // Start polling for sign-in status
@@ -291,7 +312,7 @@ export default class ProfileScreen {
         } catch (error) {
             console.error('Failed to get registration code:', error);
 
-            const errorSignInStatus = new vizbee1.homesso.messages.FailureStatus(this.signInInfo.stype, 'Failed to get registration code', false, error);
+            const errorSignInStatus = new vizbeehomesso.messages.FailureStatus(this.signInInfo.stype, 'Failed to get registration code', false, error);
             statusCallback(errorSignInStatus);
             console.error('Calling servePendingDeeplink');
             window.servePendingDeeplink();
@@ -306,6 +327,10 @@ export default class ProfileScreen {
      */
     async pollSignInStatus(regCode, statusCallback) {
         try {
+            if(this.isSignedIn) {
+                return true;
+            }
+
             const pollingResponse = await this.api.post('/v1/accountregcode/poll', 
                 { 
                     "deviceId": this.deviceId, 
@@ -321,21 +346,24 @@ export default class ProfileScreen {
             if (pollingResponse.data && pollingResponse.data.status === "done") {
 
                 console.log('Sign in successful:', pollingResponse.data);
-                this.userAuthToken = pollingResponse.data.authToken;
-
+                
                 // Clear the polling interval
                 if (this.pollingInterval) {
                     clearInterval(this.pollingInterval);
                     this.pollingInterval = null;
                 }
-
+                
                 // Update sign-in state
                 this.isSignedIn = true;
+                console.log('Sign in successful:', this.isSignedIn);
                 this.userEmail = pollingResponse.data.email;
+                this.userAuthToken = pollingResponse.data.authToken;
+                this.signInType = this.signInInfo && this.signInInfo.stype;
                 localStorage.setItem('userEmail', this.userEmail);
+                localStorage.setItem('userAuthToken', this.userAuthToken);
 
                 // Notify success
-                const successSignInStatus = new vizbee1.homesso.messages.SuccessStatus(this.signInInfo.stype, this.userEmail, { email: this.userEmail } );
+                const successSignInStatus = new vizbeehomesso.messages.SuccessStatus(this.signInInfo.stype, this.userEmail, { email: this.userEmail } );
                 statusCallback(successSignInStatus);
 
                 this.isSignInInProgress = false;
@@ -358,51 +386,65 @@ export default class ProfileScreen {
      * @param {Function} statusCallback - Callback to handle status updates
      * @param {number} maxAttempts - Maximum number of polling attempts (optional)
      */
-    startPolling(regCode, statusCallback, maxAttempts = 180) { // 3 minutes max by default
+    async startPolling(regCode, statusCallback, maxAttempts = 10) {
         let attempts = 0;
+        this.shouldContinue = true;
 
-        // Clear any existing polling interval
-        if (this.pollingInterval) {
-            clearInterval(this.pollingInterval);
+        while (this.shouldContinue && attempts < maxAttempts) {
+            if (!this.isPolling) {
+                this.isPolling = true;
+                console.log('Polling attempt:', attempts);
+                attempts++;
+
+                try {
+                    const success = await this.pollSignInStatus(regCode, statusCallback);
+                    
+                    if (success) {
+                        this.shouldContinue = false;
+                        this.setupOrUpdateUI();
+                        this.updateFocus();
+                        console.log('Sign in successful, calling servePendingDeeplink');
+                        window.servePendingDeeplink();
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                } finally {
+                    this.isPolling = false;
+                }
+            }
+
+            // Wait for the polling interval before next attempt
+            await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
-        // Initialize polling
-        this.pollingInterval = setInterval(async () => {
-            attempts++;
-
-            const success = await this.pollSignInStatus(regCode, statusCallback);
-            
-            if (success) {
-                clearInterval(this.pollingInterval);
-                this.pollingInterval = null;
-                this.setupOrUpdateUI();
-                this.updateFocus();
-                console.log('Sign in successful, calling servePendingDeeplink');
-                window.servePendingDeeplink();
-            } else if (attempts >= maxAttempts) {
-                clearInterval(this.pollingInterval);
-                this.pollingInterval = null;
-
-                const errorSignInStatus = new vizbee1.homesso.messages.FailureStatus(this.signInInfo.stype, 'Sign in timeout', false);
-                statusCallback(errorSignInStatus);
-                console.error('Sign in timeout, calling servePendingDeeplink');
-                window.servePendingDeeplink();
-            }
-        }, 1000); // Poll every 1 second
+        // Handle max attempts reached
+        if (attempts >= maxAttempts) {
+            const errorSignInStatus = new vizbeehomesso.messages.FailureStatus(
+                this.signInInfo.stype, 
+                'Sign in timeout', 
+                false
+            );
+            statusCallback(errorSignInStatus);
+            console.error('Sign in timeout, calling servePendingDeeplink');
+            window.servePendingDeeplink();
+        }
     }
 
     cancelSignIn() {
+        clearInterval(this.pollingInterval);
+
         this.isSignInInProgress = false;
         this.regCode = null;
         this.setupOrUpdateUI();
 
-        const errorSignInStatus = new vizbee1.homesso.messages.FailureStatus(this.signInInfo.stype, 'User cancelled the signin', true);
+        const errorSignInStatus = new vizbeehomesso.messages.FailureStatus(this.signInInfo.stype, 'User cancelled the signin', true);
         this.statusCallback(errorSignInStatus);
         window.servePendingDeeplink();
     }
 
     clearUserInfo() {
         localStorage.removeItem('userEmail');
+        localStorage.removeItem('userAuthToken');
         this.isSignedIn = false;
         this.userEmail = null;
         this.userAuthToken = null;
