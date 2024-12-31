@@ -294,7 +294,7 @@ export default class ProfileScreen {
                 }, 
                 {
                     timeout: 5000,
-                    retries: 2
+                    retries: 10
                 }
             );
             if (regCodeResponse.data && regCodeResponse.data.code) {
@@ -338,7 +338,7 @@ export default class ProfileScreen {
                 }, 
                 {
                     timeout: 5000,
-                    retries: 2
+                    retries: 10
                 }
             );
 
@@ -386,7 +386,7 @@ export default class ProfileScreen {
      * @param {Function} statusCallback - Callback to handle status updates
      * @param {number} maxAttempts - Maximum number of polling attempts (optional)
      */
-    async startPolling(regCode, statusCallback, maxAttempts = 10) {
+    async startPolling(regCode, statusCallback, maxAttempts = 9999) {
         let attempts = 0;
         this.shouldContinue = true;
 
