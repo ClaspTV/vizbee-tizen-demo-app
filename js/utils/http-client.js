@@ -21,6 +21,9 @@ export class HttpClient {
       headers: this.defaultHeaders,
       ...defaultConfig,
     };
+    
+    // Check if AbortController is supported
+    this.hasAbortController = typeof AbortController !== 'undefined';
   }
 
   // Helper method to merge headers
@@ -42,6 +45,17 @@ export class HttpClient {
 
   async fetchWithTimeout(url, config) {
     const { timeout = this.defaultConfig.timeout } = config;
+    
+    // If AbortController is not supported, fall back to regular fetch
+    if (!this.hasAbortController) {
+      const headers = this.mergeHeaders(config.headers);
+      return fetch(url, {
+        ...config,
+        headers,
+      });
+    }
+
+    // Use AbortController when available
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
