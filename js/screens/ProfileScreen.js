@@ -203,16 +203,19 @@ export default class ProfileScreen {
                         'Authorization': this.userAuthToken
                     },
                     timeout: 5000,
-                    retries: 5
+                    retries: 20
                 }
             );
             this.clearUserInfo();
+
+            // Update UI
+            this.setupOrUpdateUI();
         } catch (error) {
-            console.error('Failed to sign out user:', error);
+            console.error('handleSignout::Failed to sign out user:', error);
+
+            // Update UI
+            this.setupOrUpdateUI();
         }
-        
-        // Update UI
-        this.setupOrUpdateUI();
     }
 
     /**
@@ -248,7 +251,7 @@ export default class ProfileScreen {
             userLoginType: "MVPD",
             isSignedIn: true,
             userLogin: this.userEmail,
-            userName: "Sarvesh",
+            userName: this.userEmail,
             userSubscriptionRenewalType: "monthly",
             userSubscriptionType: "subscriptionType-1",
             userSubscriptionValue: "subscriptionValue-1",
