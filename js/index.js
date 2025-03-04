@@ -95,9 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 	// [BEGIN] Vizbee Integration
 
     // Initialize Vizbee integration
-    loadAndInitVizbee()
-        .then(() => { console.log('Vizbee SDK script loaded successfully'); })
-        .catch(error => console.error('Vizbee SDK script loading failed:', error));
+    loadAndInitVizbee();
 
 	// [END] Vizbee Integration
 });
@@ -352,49 +350,57 @@ function toggleScreen(screen) {
  * @returns {Promise} A promise that resolves when the Vizbee script is loaded.
  */
 function loadAndInitVizbee() {
-    listenAndInitVizbeeContinuity();
-    return addScript("https://vzb-origin.s3.us-east-1.amazonaws.com/sdk-legacy/js-homesso-dev/vizbee_sdk.js?seed="+Math.random());
-    // return addScript("http://10.0.0.14:8080/vizbee_vtv_sdk_v2.js?seed="+Math.random());
-}
 
-/**
- * Set up listener for Vizbee SDK initialization and initialize the SDK.
- */
-function listenAndInitVizbeeContinuity() {
+    let isVizbeeContinuityInitialized = false;
+    let isVizbeeHomeSSOInitialized = false;
     window.addEventListener('VIZBEE_SDK_READY', () => {
+        console.log(`Vizbee Continuity SDK script loaded successfully`);
         if (window.vizbee) {
-            console.log(`listenAndInitVizbeeContinuity - initiating vizbee sdk now ...`);
-            const vzbInstance = window.vizbee.continuity.ContinuityContext.getInstance();
-            vzbInstance.start('vzb1703223811');
-            setDeeplinkHandler();
-
-            // Load and initialize Vizbee Home SSO SDK
-            loadAndInitVizbeeHomeSSO();
+            isVizbeeContinuityInitialized = true;
         }
     });
-}
 
-function loadAndInitVizbeeHomeSSO() {
-    listenAndInitVizbeeHomeSSO();
-    return addScript("https://vzb-origin.s3.us-east-1.amazonaws.com/sdk-legacy/js-homesso-dev/vizbee_homesso_sdk.js?seed="+Math.random());
-    // return addScript("http://10.0.0.14:8081/bundle.js?seed="+Math.random());
-    
-}
-
-function listenAndInitVizbeeHomeSSO() {
-  if (window.vizbeehomesso) {
-    initVizbeeHomeSSO();
-  } else {
     window.addEventListener('VIZBEE_HOMESSO_READY', () => {
+        console.log(`Vizbee Home SSO SDK script loaded successfully`);
         if (window.vizbeehomesso) {
-          initVizbeeHomeSSO();
+            isVizbeeHomeSSOInitialized = true;
         }
     });
-  }
+
+    // Check if both SDKs are loaded every 500ms
+    const maxCount = 40; // 20 seconds
+    let count = 0;
+    let timerId = setInterval(() => {
+        if (isVizbeeContinuityInitialized && isVizbeeHomeSSOInitialized) {
+            clearInterval(timerId);
+            console.log(`Both Vizbee SDKs loaded successfully`);
+            count = 0;
+
+            initVizbeeContinuity();
+            initVizbeeHomeSSO();
+        } else {
+            count++;
+            if (count >= maxCount) {
+                clearInterval(timerId);
+                console.log(`Vizbee SDKs loading failed`);
+            }
+        }
+    }, 500);
+
+    console.log(`loadAndInitVizbee - loading vizbee sdk now ...`);
+    addScript("https://vzb-origin.s3.us-east-1.amazonaws.com/sdk-legacy/js-homesso-dev/vizbee_sdk.js?seed="+Math.random());
+    addScript("https://vzb-origin.s3.us-east-1.amazonaws.com/sdk-legacy/js-homesso-dev/vizbee_homesso_sdk.js?seed="+Math.random());
+}
+
+function initVizbeeContinuity() {
+    console.log(`initVizbeeContinuity - initiating vizbee sdk now ...`);
+    const vzbInstance = window.vizbee.continuity.ContinuityContext.getInstance();
+    vzbInstance.start('vzb1703223811');
+    setDeeplinkHandler();
 }
 
 function initVizbeeHomeSSO() {
-    console.log(`listenAndInitVizbeeHomeSSO - initiating vizbee homesso sdk now ...`);
+    console.log(`initVizbeeHomeSSO - initiating vizbee homesso sdk now ...`);
     const vzbHomeSSOContext = vizbeehomesso.HomeSSOContext.getInstance();
     const vzbHomeSSOManager = vzbHomeSSOContext.getHomeSSOManager();
     vzbHomeSSOManager.init();
@@ -424,7 +430,7 @@ function initVizbeeHomeSSO() {
 
     const homeSSOUIManager = vzbHomeSSOContext.getHomeSSOUIManager();
     homeSSOUIManager.setTheme({
-        primaryColor: "#1eabe3;",
+        primaryColor: "#1eabe3",
     });
 
     // homeSSOUIManager.setSuccessSignInModalConfig({
